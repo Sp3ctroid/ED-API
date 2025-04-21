@@ -1,5 +1,11 @@
 package types
 
+type User struct {
+	ID       int    `json:"id,omitempty"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Is_admin bool   `json:"is_admin,omitempty"`
+}
 type Album struct {
 	ID     int     `json:"id"`
 	Title  string  `json:"title"`

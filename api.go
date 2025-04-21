@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	db "github.com/Sp3ctroid/ED-API/database"
 	"github.com/Sp3ctroid/ED-API/handlers"
 	"github.com/Sp3ctroid/ED-API/storage"
 	"github.com/Sp3ctroid/ED-API/types"
@@ -19,13 +20,21 @@ func main() {
 	slicestore := storage.NewSliceStore()
 	slicestore.Items = append(slicestore.Items, types.Album{0, "Doobi Do", "Kim 5+", 14.30})
 	slicestore.Items = append(slicestore.Items, types.Album{1, "Cringe", "Poser", 42.10})
-	albumH := handlers.NewAlbumHandler(slicestore)
+
+	dbstore := storage.NewDBStore(db.OpenStorage())
+
+	albumH := handlers.NewAlbumHandler(dbstore)
+	usersH := handlers.NewUsersHandler(dbstore)
 
 	mux.HandleFunc("/", home.ServeHTTP)
 	mux.HandleFunc("/albums/{id}", albumH.FindById).Methods("GET")
 	mux.HandleFunc("/albums", albumH.CreateAlbum).Methods("POST")
 	mux.HandleFunc("/albums", albumH.GetAlbums).Methods("GET")
 	mux.HandleFunc("/albums/{id}", albumH.PutAlbum).Methods("PUT")
+
+	login := mux.PathPrefix("/users").Subrouter()
+
+	login.HandleFunc("/login", usersH.Login).Methods("POST")
 
 	fmt.Printf("%v", slicestore.GetAllAlbums())
 	err := http.ListenAndServe(":8080", mux)
