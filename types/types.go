@@ -24,3 +24,7 @@ func (j *JSON_Status) Response(st string, ac string, ob any) {
 	j.Action = ac
 	j.Obj = ob
 }
+
+func (j *JSON_Status) Error() string {
+	return j.Action
+}

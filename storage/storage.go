@@ -16,6 +16,8 @@ type DBStore struct {
 
 type UserStore interface {
 	LoginUser(username string, password string) (user types.User, err error)
+	RegisterUser(username string, password string) (err error)
+	CheckUser(username string) bool
 }
 type AlbumStore interface {
 	GetAlbumByID(ID int) (album types.Album)
@@ -40,6 +42,32 @@ func (db DBStore) LoginUser(username string, password string) (types.User, error
 
 	return user, nil
 
+}
+
+func (db *DBStore) RegisterUser(username string, password string) error {
+
+	_, err := db.storage.Exec("INSERT INTO users (username, passw, is_adm) VALUES (?, ?, ?)", username, password, false)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *DBStore) CheckUser(username string) bool {
+
+	result := 0
+	row := db.storage.QueryRow("SELECT EXISTS(SELECT * FROM users WHERE username = ?)", username)
+	err := row.Scan(&result)
+	if err != nil {
+		panic(err)
+	}
+
+	if result == 1 {
+		return true
+	} else {
+		return false
+	}
 }
 
 func (db DBStore) GetAlbumByID(ID int) types.Album {
